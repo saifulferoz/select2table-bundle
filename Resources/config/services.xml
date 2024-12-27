@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="feroz_select2table.select2table_type" class="Feroz\Select2TableBundle\Form\Type\Select2EntityType">
+            <tag name="form.type" alias="feroz_select2table" />
+            <argument type="service" id="database_connection" />
+            <argument type="service" id="router" />
+            <argument>%feroz_select2_table.config%</argument>
+        </service>
+        <service id="feroz_select2table.autocomplete_service" class="Feroz\Select2TableBundle\Service\AutocompleteService">
+            <argument type="service" id="form.factory" />
+            <argument type="service" id="database_connection" />
+        </service>
+    </services>
+
+</container>

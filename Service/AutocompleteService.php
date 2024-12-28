@@ -26,15 +26,18 @@ class AutocompleteService
         $fieldOptions = $form->get($request->get('field_name'))->getConfig()->getOptions();
         $field = $fieldOptions['property'];
         $table = $fieldOptions['table_name'];
-        $term = $request->get('q');
+        $term = strtolower($request->get('q'));
         $maxResults = $fieldOptions['page_limit'];
         $offset = ($request->get('page', 1) - 1) * $maxResults;
-
         $queryBuilder = $this->connection->createQueryBuilder();
+        $conditions = [];
+        foreach ($field as $f) {
+            $conditions[] = $queryBuilder->expr()->like('lower('.$f.')', ':term');
+        }
         $queryBuilder
             ->select('COUNT(*)')
             ->from($table)
-            ->where($queryBuilder->expr()->like($field, ':term'))
+            ->where($queryBuilder->expr()->orX(...$conditions))
             ->setParameter('term', '%'.$term.'%');
         $count = $queryBuilder->executeQuery()->fetchOne();
 
@@ -42,7 +45,7 @@ class AutocompleteService
         $queryBuilder
             ->select('*')
             ->from($table)
-            ->where($queryBuilder->expr()->like($field, ':term'))
+            ->where($queryBuilder->expr()->orX(...$conditions))
             ->setFirstResult($offset)
             ->setMaxResults($maxResults)
             ->setParameter('term', '%'.$term.'%');
@@ -53,7 +56,7 @@ class AutocompleteService
             'results' => array_map(function ($row) use ($fieldOptions) {
                 return [
                     'id' => $row[$fieldOptions['primary_key']],
-                    'text' => $row[$fieldOptions['property']],
+                    'text' => $row[$fieldOptions['text_property']],
                 ];
             }, $paginationResults),
             'more' => $count > ($offset + $maxResults),

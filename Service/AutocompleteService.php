@@ -4,6 +4,7 @@ namespace Feroz\Select2TableBundle\Service;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormTypeInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -20,9 +21,11 @@ class AutocompleteService
      *
      * @return array
      */
-    public function getAutocompleteResults(Request $request, $type): array
+    public function getAutocompleteResults(Request $request, string $type, ?FormInterface $form = null): array
     {
-        $form = $this->formFactory->create($type);
+        if (null == $form) {
+            $form = $this->formFactory->create($type);
+        }
         $fieldOptions = $form->get($request->get('field_name'))->getConfig()->getOptions();
         $field = $fieldOptions['property'];
         $table = $fieldOptions['table_name'];

@@ -42,6 +42,10 @@ class AutocompleteService
             ->from($table)
             ->where($queryBuilder->expr()->orX(...$conditions))
             ->setParameter('term', '%'.$term.'%');
+        if (isset($fieldOptions['callback']) && is_callable($fieldOptions['callback'])) {
+            $callback = $fieldOptions['callback'];
+            $callback($queryBuilder, $request);
+        }
         $count = $queryBuilder->executeQuery()->fetchOne();
 
         $queryBuilder = $this->connection->createQueryBuilder();
@@ -52,6 +56,10 @@ class AutocompleteService
             ->setFirstResult($offset)
             ->setMaxResults($maxResults)
             ->setParameter('term', '%'.$term.'%');
+        if (isset($fieldOptions['callback']) && is_callable($fieldOptions['callback'])) {
+            $callback = $fieldOptions['callback'];
+            $callback($queryBuilder, $request);
+        }
         $paginationResults = $queryBuilder->executeQuery()->fetchAllAssociative();
 
         // Format Results

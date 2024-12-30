@@ -124,7 +124,7 @@ class Select2TableType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-                'object_manager' => null,
+                'table_name' => null,
                 'class' => null,
                 'data_class' => null,
                 'primary_key' => 'id',

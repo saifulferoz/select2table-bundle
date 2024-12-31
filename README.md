@@ -1,18 +1,17 @@
-select2entity-bundle
+select2table-bundle
 ====================
 
 ## Introduction
 
 This is a Symfony bundle which enables the popular [Select2](https://select2.github.io) component to be used as a drop-in replacement for a standard entity field on a Symfony form.
 
-It works with Symfony 4 and 5. For Symfony 2 and 3, please use version or 2.x of the bundle.
-For Select2 4.0 and above. For older versions, use version 1.x of the bundle (not compatible with Symfony 5).
+It works with Symfony 4 and upper versions.
 
 The main feature that this bundle provides compared with the standard Symfony entity field (rendered with a html select) is that the list is retrieved via a remote ajax call. This means that the list can be of almost unlimited size. The only limitation is the performance of the database query or whatever that retrieves the data in the remote web service.
 
 It works with both single and multiple selections. If the form is editing a Symfony entity then these modes correspond with many to one and many to many relationships. In multiple mode, most people find the Select2 user interface easier to use than a standard select tag with multiple=true with involves awkward use of the ctrl key etc.
 
-The project was inspired by [lifo/typeahead-bundle](https://github.com/lifo101/typeahead-bundle) which uses the Typeahead component in Bootstrap 2 to provide similar functionality. Select2Entity can be used anywhere Select2 can be installed, including Bootstrap 3.
+The project was inspired by [tetranz/select2entity-bundle](https://github.com/lifo101/typeahead-bundle) which uses the Typeahead component in Bootstrap 2 to provide similar functionality. Select2Table can be used anywhere Select2 can be installed, including Bootstrap 3.
 
 Thanks to @ismailbaskin we now have Select2 version 4 compatibility.
 
@@ -38,20 +37,20 @@ These files live in the Resources/public/js and Resources/public/css folders of 
 
 Alternatively, minified versions of select2.js and select2.css can be loaded from the CloudFlare CDN using the two lines of code given here: [https://select2.github.io](https://select2.github.io). Make sure the script tag comes after where jQuery is loaded. That might be in the page footer.
 
-* Add `tetranz/select2entity-bundle` to your projects `composer.json` "requires" section:
+* Add `feroz/select2table-bundle` to your projects `composer.json` "requires" section:
 
 ```javascript
 {
     // ...
     "require": {
         // ...
-        "tetranz/select2entity-bundle": "2.*"
+        "feroz/select2table-bundle": "2.*"
     }
 }
 ```
 Note that this only works with Select2 version 4. If you are using Select2 version 3.X please use `"tetranz/select2entity-bundle": "1.*"` in `composer.json`
 
-* Run `php composer.phar update tetranz/select2entity-bundle` in your project root.
+* Run `php composer.phar update feroz/select2table-bundle` in your project root.
 * Update your project `config/bundles.php` file and add this bundle to the $bundles array:
 
 ```php
@@ -72,24 +71,23 @@ twig:
 ```
 
 ```
-<script src="{{ asset('bundles/tetranzselect2entity/js/select2table.js') }}"></script>
+<script src="{{ asset('bundles/tetranzselect2table/js/select2table.js') }}"></script>
 ```
 
 ## How to use
 
-The following is for Symfony 4. See https://github.com/tetranz/select2entity-bundle/tree/v2.1 for Symfony 2/3 configuration and use.
-
-Select2Entity is simple to use. In the buildForm method of a form type class, specify `Select2EntityType::class` as the type where you would otherwise use `entity:class`.
+The following is for Symfony 4 and upper version. 
+Select2Table is simple to use. In the buildForm method of a form type class, specify `Select2TableType::class` as the type where you would otherwise use `entity:class`.
 
 Here's an example:
 
 ```php
 $builder
-   ->add('country', Select2EntityType::class, [
+   ->add('country', Select2TableType::class, [
             'multiple' => true,
-            'remote_route' => 'tetranz_test_default_countryquery',
+            'remote_route' => 'feroz_test_default_countryquery',
             'remote_params' => [], // static route parameters for request->query
-            'class' => '\Tetranz\TestBundle\Entity\Country',
+            'table_name' => 'tbl_countries',
             'primary_key' => 'id',
             'text_property' => 'name',
             'minimum_input_length' => 2,
@@ -105,17 +103,17 @@ $builder
                 'end' => (new \DateTime())->modify('+5d'),
                 // any other parameters you want your ajax route request->query to get, that you might want to modify dynamically
             ],
-            // 'object_manager' => $objectManager, // inject a custom object / entity manager 
+           
         ])
 ```
 Put this at the top of the file with the form type class:
 ```php
-use Feroz\Select2TableBundle\Form\Type\Select2EntityType;
+use Feroz\Select2TableBundle\Form\Type\Select2TableType;
 ```
 
 ## Options
 Defaults will be used for some if not set.
-* `class` is your entity class. Required
+* `table_name` is your table name. Required
 * `primary_key` is the name of the property used to uniquely identify entities. Defaults to 'id'
 * `text_property` This is the entity property used to retrieve the text for existing data. 
 If text_property is omitted then the entity is cast to a string. This requires it to have a __toString() method.
@@ -124,11 +122,6 @@ If text_property is omitted then the entity is cast to a string. This requires i
 * `page_limit` This is passed as a query parameter to the remote call. It is intended to be used to limit size of the list returned. Defaults to 10.
 * `scroll` True will enable infinite scrolling. Defaults to false.
 * `allow_clear` True will cause Select2 to display a small x for clearing the value. Defaults to false.
-* `allow_add` Is an option array for the add tags settings of Select2. Only available when 'multiple' is true on form.
-    * `enabled` Enables the allow new tags option. True or False. Default False.
-    * `new_tag_text` The text that is displayed behind entities that don't exist if `allow_add` is true. Default is " (NEW)".
-    * `new_tag_prefix` The prefix identifier for new tags, default is "__". Your real values must not contain these symbols in the beginning.
-    * `tag_separators` A javascript array of delimiters to auto split the tags with. 
 * `delay` The delay in milliseconds after a keystroke before trigging another AJAX request. Defaults to 250 ms.
 * `placeholder` Placeholder text.
 * `language` i18n language code. Defaults to en.
@@ -138,7 +131,6 @@ If text_property is omitted then the entity is cast to a string. This requires i
 * `transformer` The fully qualified class name of a custom transformer if you need that flexibility as described below.
 * `autostart` Determines whether or not the select2 jQuery code is called automatically on document ready. Defaults to true which provides normal operation.
 * `width` Sets a data-width attribute if not null. Defaults to null.
-* `class_type` Optional value that will be added to the ajax request as a query string parameter.
 * `render_html` This will render your results returned under ['html'].
 
 The url of the remote query can be given by either of two ways: `remote_route` is the Symfony route. 
@@ -150,7 +142,7 @@ You may use `query_parameters` for when those remote_params have to be changeabl
 The defaults can be changed in your config/packages/tetranzselect2entity.yaml file with the following format.
 
 ```yaml
-tetranz_select2_entity:
+feroz_select2_table:
     minimum_input_length: 2
     page_limit: 8
     allow_clear: true
@@ -208,8 +200,8 @@ $builder
 In transform sets data array like this:
 ```php
 $data[] = array(
-    'id' => $country->getId(),
-    'text' => $country->getName().' ('.$country->getContinent()->getName().')',
+    'id' => $row['id'],
+    'text' => $row['name'].' ('.$row['continent_name'].')',
 );
 ```
 Your custom transformer and respectively your Ajax controller should return an array in the following format:
@@ -221,42 +213,6 @@ Your custom transformer and respectively your Ajax controller should return an a
 ```
 If you are using the allow_add option and your entity requires other fields besides the text_property field to be valid, you will either need to extend the EntitiesToPropertyTransformer to add the missing field, create a doctrine prePersist listener, or add the missing data in the form view after submit before saving.
 
-### Add New Tags
-
-If you want to be able to create new entities through Select2 tags, you can enable it using the `allow_add` set of options. 
-
-For example:
-```php
-$builder
-    ->add('tags', Select2EntityType::class, [
-        'remote_route' => 'tetranz_test_tags',
-        'table_name' => 'tbl_post_tags',
-        'text_property' => 'name',
-        'multiple' => true,
-        'allow_add' => [
-            'enabled' => true,
-            'new_tag_text' => ' (NEW)',
-            'new_tag_prefix' => '__',
-            'tag_separators' => '[",", " "]'
-        ],
-    ]);
-```
-
-A few things to keep in mind when adding tags:
-* Your data should not have any chance of matching the first characters with the `new_tag_prefix`. If there is a chance, change it to something else like '**' or '$$'.
-* `tag_separators` is the same as the Select2 option. It should be a javascript array.
-* If the entity you are wanting to `allow_add` has any other required fields aside from the one specified in `text_property`, you must either add them in the form submit or add prePersist hooks to the doctrine entity.
-* If you are using the "tags" to allow the creation of new entities through a single entry mode, keep in mind you need to remove the Space as a separator or you won't be able to input a space character in this entity. 
-```php
-$builder
-    ->add('tags', Select2TableType::class, [
-        ...
-        'allow_add' => [
-            ...
-            'tag_separators' => '[",", ""]' // No Space here
-        ],
-    ]);
-```
 
 ### Including other field values in request
 
@@ -284,7 +240,7 @@ $builder
             'req_params' => ['state' => 'parent.children[state]'],
             'property' => 'name',
             'callback'    => function (QueryBuilder $qb, $data) {
-                $qb->andWhere('e.state = :state');
+                $qb->andWhere('state = :state');
 
                 if ($data instanceof Request) {
                     $qb->setParameter('state', $data->get('state'));
@@ -294,11 +250,11 @@ $builder
 
             },
         ])
-    ->add('city', Select2EntityType::class, [
+    ->add('city', Select2TableType::class, [
         'required' => true,
         'multiple' => false,
         'remote_route' => 'ajax_autocomplete',
-        'class' => City::class,
+        'table_name' => tbl_cities,
         'minimum_input_length' => 0,
         'page_limit' => 10,
         'scroll' => true,
@@ -306,7 +262,7 @@ $builder
         'req_params' => ['county' => 'parent.children[county]'],
         'property' => 'name',
         'callback'    => function (QueryBuilder $qb, $data) {
-            $qb->andWhere('e.county = :county');
+            $qb->andWhere('county = :county');
 
             if ($data instanceof Request) {
                 $qb->setParameter('county', $data->get('county'));
@@ -332,7 +288,7 @@ Because the handling of requests is usually very similar you can use a service w
     {
         // Check security etc. if needed
     
-        $as = $this->get('tetranz_select2entity.autocomplete_service');
+        $as = $this->get('ferozselect2table.autocomplete_service');
 
         $result = $as->getAutocompleteResults($request, YourFormType::class);
 
@@ -363,7 +319,7 @@ Your custom transformer should return data like this:
 ```
 You need to define your own JavaScript function `select2entityAjax` which extends the original one `select2entity` and display custom template with image:
 ```javascript
-$.fn.select2entityAjax = function(action) {
+$.fn.select2tableAjax = function(action) {
     var action = action || {};
     var template = function (item) {
         var img = item.img || null;
@@ -378,18 +334,18 @@ $.fn.select2entityAjax = function(action) {
             '<span><img src="' + img + '" class="img-circle img-sm"> ' + item.text + '</span>'
         );
     };
-    this.select2entity($.extend(action, {
+    this.select2table($.extend(action, {
         templateResult: template,
         templateSelection: template
     }));
     return this;
 };
-$('.select2entity').select2entityAjax();
+$('.select2table').select2tableAjax();
 ```
 This script will add the functionality globally for all elements with class `select2entity`, but if the `img` is not passed it will work as the original `select2entity`. 
 You should add a `'autostart' => false` to form to run properly JS code.
 ````php
-    ->add('contry', Select2EntityType::class, [
+    ->add('contry', Select2TableType::class, [
         'remote_route' => 'country_select2_query',
         'autostart' => false,
     ])
@@ -398,7 +354,7 @@ You should add a `'autostart' => false` to form to run properly JS code.
 
 You also will need to override the following block in your template:
 ```twig
-{% block tetranz_select2entity_widget_select_option %}
+{% block feroz_select2table_widget_select_option %}
     <option value="{{ label.id }}" selected="selected"
             {% for key, data in label %}
                 {% if key not in ['id', 'text'] %} data-{{ key }}="{{ data }}"{% endif %}
@@ -417,6 +373,6 @@ For Bootstrap4 theme look at https://github.com/ttskch/select2-bootstrap4-theme
 If you use [Embedded Collection Forms](http://symfony.com/doc/current/cookbook/form/form_collections.html) and [data-prototype](http://symfony.com/doc/current/cookbook/form/form_collections.html#allowing-new-tags-with-the-prototype) to add new elements in your form, you will need the following JavaScript that will listen for adding an element `.select2entity`:
 ```javascript
 $('body').on('click', '[data-prototype]', function(e) {
-    $(this).prev().find('.select2entity').last().select2entity();
+    $(this).prev().find('.select2table').last().select2table();
 });
 ```

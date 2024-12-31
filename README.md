@@ -48,7 +48,7 @@ Alternatively, minified versions of select2.js and select2.css can be loaded fro
     }
 }
 ```
-Note that this only works with Select2 version 4. If you are using Select2 version 3.X please use `"tetranz/select2entity-bundle": "1.*"` in `composer.json`
+
 
 * Run `php composer.phar update feroz/select2table-bundle` in your project root.
 * Update your project `config/bundles.php` file and add this bundle to the $bundles array:
@@ -56,7 +56,7 @@ Note that this only works with Select2 version 4. If you are using Select2 versi
 ```php
 $bundles = [
     // ...
-    Feroz\Select2TableBundle\TetranzSelect2EntityBundle::class => ['all' => true]
+    Feroz\Select2TableBundle\FerozSelect2TableBundle::class => ['all' => true]
 ];
 ```
 
@@ -71,7 +71,7 @@ twig:
 ```
 
 ```
-<script src="{{ asset('bundles/tetranzselect2table/js/select2table.js') }}"></script>
+<script src="{{ asset('bundles/ferozselect2table/js/select2table.js') }}"></script>
 ```
 
 ## How to use
@@ -139,7 +139,7 @@ the url directly.
 
 You may use `query_parameters` for when those remote_params have to be changeable dynamically. You may change them using $('#elem').data('query-parameters', { /* new params */ });
 
-The defaults can be changed in your config/packages/tetranzselect2entity.yaml file with the following format.
+The defaults can be changed in your config/packages/ferozselect2table.yaml file with the following format.
 
 ```yaml
 feroz_select2_table:

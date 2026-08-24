@@ -1,5 +1,5 @@
 {
-  "name": "saifulferoz/select2table-bundle",
+  "name": "saifuleroz/select2table-bundle",
   "type": "symfony-bundle",
   "description": "A Symfony bundle integrating Select2 as a high-performance remote AJAX drop-in replacement for standard entity/table select fields.",
   "keywords": [

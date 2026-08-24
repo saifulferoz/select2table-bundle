@@ -1,9 +1,9 @@
 # Select2TableBundle
 
-[![CI](https://github.com/saifulferoz/select2table-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/saifulferoz/select2table-bundle/actions)
-[![Latest Stable Version](https://poser.pugx.org/saifulferoz/select2table-bundle/v/stable)](https://packagist.org/packages/saifulferoz/select2table-bundle)
-[![Total Downloads](https://poser.pugx.org/saifulferoz/select2table-bundle/downloads)](https://packagist.org/packages/saifulferoz/select2table-bundle)
-[![License](https://poser.pugx.org/saifulferoz/select2table-bundle/license)](https://packagist.org/packages/saifulferoz/select2table-bundle)
+[![CI](https://github.com/saifuleroz/select2table-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/saifuleroz/select2table-bundle/actions)
+[![Latest Stable Version](https://poser.pugx.org/saifuleroz/select2table-bundle/v/stable)](https://packagist.org/packages/saifuleroz/select2table-bundle)
+[![Total Downloads](https://poser.pugx.org/saifuleroz/select2table-bundle/downloads)](https://packagist.org/packages/saifuleroz/select2table-bundle)
+[![License](https://poser.pugx.org/saifuleroz/select2table-bundle/license)](https://packagist.org/packages/saifuleroz/select2table-bundle)
 [![PHP Version](https://img.shields.io/badge/PHP-%3E%3D8.2-8892BF.svg)](https://php.net)
 [![Symfony Version](https://img.shields.io/badge/Symfony-6.4%20%7C%207.4%20%7C%208.x-black.svg)](https://symfony.com)
 
@@ -41,7 +41,7 @@ A high-performance Symfony bundle that integrates [Select2](https://select2.org/
 ### 1. Install via Composer
 
 ```bash
-composer require saifulferoz/select2table-bundle
+composer require saifuleroz/select2table-bundle
 ```
 
 ### 2. Enable the Bundle (if not using Symfony Flex)
@@ -98,7 +98,7 @@ Import the script in your `assets/app.js`:
 ```javascript
 import 'select2/dist/css/select2.min.css';
 import 'select2';
-import './vendor/saifulferoz/select2table-bundle/select2table.js';
+import './vendor/saifuleroz/select2table-bundle/select2table.js';
 ```
 
 ---
@@ -276,7 +276,7 @@ If using Symfony Form Collections with `data-prototype` or dynamic additions, `s
 
 ## Backward Compatibility
 
-For smooth upgrades from `feroz/select2table-bundle`:
+For smooth upgrades from legacy versions:
 - Legacy namespace `Feroz\Select2TableBundle\` classes and service aliases remain intact.
 - Legacy form theme block `{% block feroz_select2table_widget %}` delegates automatically to `saifulferoz_select2table_widget`.
 - Legacy configuration key `feroz_select2_table` is fully supported.

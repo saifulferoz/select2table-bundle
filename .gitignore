@@ -1,24 +1,9 @@
-# Bootstrap
-app/bootstrap*
-
-# Symfony directories
-vendor/*
-*/logs/*
-*/cache/*
-web/uploads/*
-web/bundles/*
-
-# Configuration files
-app/config/parameters.ini
-app/config/parameters.yml
-
-# Composer
-composer.phar
-
-#PhpStorm
-.idea
-
-#Visual Studio
-.vs
-*.phpproj
-*.sln
+/vendor/
+/composer.lock
+/.phpunit.cache/
+/.phpunit.result.cache
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/

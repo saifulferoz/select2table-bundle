@@ -91,12 +91,17 @@ class Select2TableType extends AbstractType
                 array_merge($options['remote_params'] ?? [], ['page_limit' => $options['page_limit']])
             ) : '');
 
-        $varNames = array_merge(
-            ['multiple', 'placeholder', 'primary_key', 'autostart', 'query_parameters', 'width', 'render_html', 'class_type'],
-            array_keys($this->config)
-        );
+        // Explicit whitelist: only presentation-level options reach the template.
+        // Merging array_keys($this->config) here would also expose internal schema
+        // details such as table_name/primary_key/text_property in rendered HTML.
+        $varNames = [
+            'multiple', 'placeholder', 'autostart', 'query_parameters', 'width',
+            'render_html', 'class_type', 'minimum_input_length', 'scroll',
+            'page_limit', 'allow_clear', 'delay', 'language', 'theme', 'cache',
+            'cache_timeout',
+        ];
 
-        foreach (array_unique($varNames) as $varName) {
+        foreach ($varNames as $varName) {
             $view->vars[$varName] = $options[$varName] ?? ($this->config[$varName] ?? null);
         }
 
@@ -148,6 +153,7 @@ class Select2TableType extends AbstractType
             ],
             'delay' => $this->config['delay'] ?? 250,
             'text_property' => $this->config['text_property'] ?? null,
+            'order_by' => $this->config['order_by'] ?? null,
             'placeholder' => false,
             'language' => $this->config['language'] ?? 'en',
             'theme' => $this->config['theme'] ?? 'default',
@@ -179,6 +185,7 @@ class Select2TableType extends AbstractType
         $resolver->setAllowedTypes('allow_add', 'array');
         $resolver->setAllowedTypes('delay', 'int');
         $resolver->setAllowedTypes('text_property', ['null', 'string']);
+        $resolver->setAllowedTypes('order_by', ['null', 'string']);
         $resolver->setAllowedTypes('placeholder', ['null', 'string', 'bool']);
         $resolver->setAllowedTypes('language', 'string');
         $resolver->setAllowedTypes('theme', 'string');

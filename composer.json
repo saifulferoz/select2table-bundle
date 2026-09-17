@@ -1,63 +1,74 @@
 {
-  "name": "saifuleroz/select2table-bundle",
-  "type": "symfony-bundle",
-  "description": "A Symfony bundle integrating Select2 as a high-performance remote AJAX drop-in replacement for standard entity/table select fields.",
-  "keywords": [
-    "symfony",
-    "symfony-bundle",
-    "select2",
-    "typeahead",
-    "autocomplete",
-    "ajax",
-    "form",
-    "doctrine",
-    "dbal"
-  ],
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Saiful Islam Feroz",
-      "email": "saif012@gmail.com"
+    "name": "saifuleroz/select2table-bundle",
+    "type": "symfony-bundle",
+    "description": "A Symfony bundle integrating Select2 as a high-performance remote AJAX drop-in replacement for standard entity/table select fields.",
+    "keywords": [
+        "symfony",
+        "symfony-bundle",
+        "select2",
+        "typeahead",
+        "autocomplete",
+        "ajax",
+        "form",
+        "doctrine",
+        "dbal"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Saiful Islam Feroz",
+            "email": "saif012@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.2 <9.0",
+        "doctrine/dbal": "^3.6 || ^4.0",
+        "twig/twig": "^3.0",
+        "symfony/config": "^6.4 || ^7.4 || ^8.0",
+        "symfony/dependency-injection": "^6.4 || ^7.4 || ^8.0",
+        "symfony/form": "^6.4 || ^7.4 || ^8.0",
+        "symfony/http-foundation": "^6.4 || ^7.4 || ^8.0",
+        "symfony/http-kernel": "^6.4 || ^7.4 || ^8.0",
+        "symfony/options-resolver": "^6.4 || ^7.4 || ^8.0",
+        "symfony/property-access": "^6.4 || ^7.4 || ^8.0",
+        "symfony/routing": "^6.4 || ^7.4 || ^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "symfony/browser-kit": "^6.4 || ^7.4 || ^8.0",
+        "symfony/flex": "^2.4",
+        "symfony/phpunit-bridge": "^6.4 || ^7.4 || ^8.0",
+        "symfony/translation": "^6.4 || ^7.4 || ^8.0",
+        "symfony/twig-bridge": "^6.4 || ^7.4 || ^8.0",
+        "symfony/yaml": "^6.4 || ^7.4 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SaifulFeroz\\Select2TableBundle\\": "src/"
+        },
+        "classmap": [
+            "src/FerozSelect2TableBundle.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SaifulFeroz\\Select2TableBundle\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "2.0-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "symfony/flex": true
+        },
+        "sort-packages": true
     }
-  ],
-  "require": {
-    "php": ">=8.2",
-    "doctrine/dbal": "^3.6 || ^4.0",
-    "twig/twig": "^3.0",
-    "symfony/config": "^6.4 || ^7.0 || ^8.0",
-    "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0",
-    "symfony/form": "^6.4 || ^7.0 || ^8.0",
-    "symfony/http-foundation": "^6.4 || ^7.0 || ^8.0",
-    "symfony/http-kernel": "^6.4 || ^7.0 || ^8.0",
-    "symfony/options-resolver": "^6.4 || ^7.0 || ^8.0",
-    "symfony/property-access": "^6.4 || ^7.0 || ^8.0",
-    "symfony/routing": "^6.4 || ^7.0 || ^8.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.5 || ^11.0",
-    "symfony/phpunit-bridge": "^6.4 || ^7.0 || ^8.0",
-    "symfony/browser-kit": "^6.4 || ^7.0 || ^8.0",
-    "symfony/yaml": "^6.4 || ^7.0 || ^8.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "SaifulFeroz\\Select2TableBundle\\": "src/",
-      "Feroz\\Select2TableBundle\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "SaifulFeroz\\Select2TableBundle\\Tests\\": "tests/"
-    }
-  },
-  "extra": {
-    "branch-alias": {
-      "dev-main": "2.0-dev"
-    }
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit"
-  },
-  "minimum-stability": "stable",
-  "prefer-stable": true
 }

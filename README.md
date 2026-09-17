@@ -51,7 +51,7 @@ If you are not using Symfony Flex, add the bundle to `config/bundles.php`:
 ```php
 return [
     // ...
-    SaifulFeroz\Select2TableBundle\SaifulFerozSelect2TableBundle::class => ['all' => true],
+    SaifulFeroz\Select2TableBundle\Select2TableBundle::class => ['all' => true],
 ];
 ```
 
@@ -62,7 +62,7 @@ Add the bundle's form theme in `config/packages/twig.yaml`:
 ```yaml
 twig:
     form_themes:
-        - '@SaifulFerozSelect2Table/form/fields.html.twig'
+        - '@Select2Table/form/fields.html.twig'
 ```
 
 ---
@@ -167,10 +167,10 @@ class AutocompleteController extends AbstractController
 
 ## Configuration Reference
 
-You can customize global defaults in `config/packages/saifulferoz_select2_table.yaml`:
+You can customize global defaults in `config/packages/select2_table.yaml`:
 
 ```yaml
-saifulferoz_select2_table:
+select2_table:
     minimum_input_length: 1       # Characters before triggering search
     page_limit: 10                # Number of records per page
     scroll: false                 # Enable infinite scrolling
@@ -183,13 +183,41 @@ saifulferoz_select2_table:
     table_name: null              # Default table name
     text_property: null           # Default column for text label
     primary_key: 'id'             # Default primary key column
+    order_by: null                # Column used to order results (defaults to text_property)
     width: null                   # CSS width (e.g. '100%', 'resolve')
-    render_html: false            # Allow HTML rendering in results
+    render_html: false            # Allow HTML rendering in results (see security note)
     allow_add:
         enabled: false            # Enable new tag creation
         new_tag_text: ' (NEW)'    # Text appended to new tags
         new_tag_prefix: '__'      # Prefix added to submitted value
         tag_separators: '[",", " "]'
+```
+
+> **Security — `render_html`**
+>
+> With `render_html: true` the bundle disables Select2's markup escaping and injects
+> the `html` column of each row into the page as raw HTML. Any user-controllable
+> content in that column is then executed as script (stored XSS).
+>
+> Only enable this when the `html` column is written exclusively by trusted code,
+> and sanitize the value server-side before storing it. Leave it `false` otherwise.
+>
+> As a safeguard the `html` column is omitted from the AJAX response entirely unless
+> the field sets `render_html: true`, so fields that do not opt in never receive the
+> raw value in the first place.
+
+### Result ordering
+
+Paginated results are always ordered by a column so that pages partition the result
+set deterministically. Without an explicit `order_by` the `text_property` column is
+used. Set `order_by` when you need a different order (for example `created_at`):
+
+```php
+$builder->add('country', Select2TableType::class, [
+    'table_name'   => 'tbl_countries',
+    'text_property'=> 'name',
+    'order_by'     => 'created_at',
+]);
 ```
 
 ---
@@ -274,12 +302,30 @@ If using Symfony Form Collections with `data-prototype` or dynamic additions, `s
 
 ---
 
+## Upgrading
+
+### From 2.0.0
+
+`2.0.0` could not be installed: its extension alias did not match the name Symfony
+derives from the bundle class, so `cache:clear` aborted with a `LogicException`.
+Fixing it required renaming the bundle class and its configuration key.
+
+| | 2.0.0 (broken) | Current |
+|---|---|---|
+| Bundle class | `SaifulFerozSelect2TableBundle` | `Select2TableBundle` |
+| Config key | `saifulferoz_select2_table` | `select2_table` |
+| Config file | `config/packages/saifulferoz_select2_table.yaml` | `config/packages/select2_table.yaml` |
+| Twig namespace | `@SaifulFerozSelect2Table` | `@Select2Table` |
+
+Update `config/bundles.php`, rename the configuration file and its root key, and
+update the `form_themes` entry as shown in the installation section.
+
 ## Backward Compatibility
 
-For smooth upgrades from legacy versions:
 - Legacy namespace `Feroz\Select2TableBundle\` classes and service aliases remain intact.
-- Legacy form theme block `{% block feroz_select2table_widget %}` delegates automatically to `saifulferoz_select2table_widget`.
-- Legacy configuration key `feroz_select2_table` is fully supported.
+  `FerozSelect2TableBundle` keeps the `feroz_select2_table` configuration key.
+- Legacy form theme block `{% block feroz_select2table_widget %}` delegates automatically to
+  `saifulferoz_select2table_widget`.
 
 ---
 

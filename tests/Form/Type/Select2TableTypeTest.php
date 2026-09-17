@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use SaifulFeroz\Select2TableBundle\Form\Type\Select2TableType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -129,5 +130,60 @@ class Select2TableTypeTest extends TestCase
         $this->assertSame('user_select[]', $view->vars['full_name']);
         $this->assertSame('100%', $view->vars['width']);
         $this->assertTrue($view->vars['render_html']);
+    }
+
+    /**
+     * Regression: internal schema details must not be published to the template,
+     * where they would end up exposed in rendered HTML or a profiler dump.
+     */
+    public function testFinishViewDoesNotExposeSchemaDetails(): void
+    {
+        $view = new FormView();
+        $form = $this->createMock(FormInterface::class);
+
+        $options = [
+            'remote_path' => '/ajax/users',
+            'remote_route' => null,
+            'remote_params' => [],
+            'table_name' => 'tbl_users',
+            'text_property' => 'username',
+            'primary_key' => 'uuid',
+            'order_by' => 'created_at',
+            'page_limit' => 15,
+            'multiple' => false,
+            'placeholder' => false,
+            'autostart' => true,
+            'query_parameters' => [],
+            'width' => null,
+            'render_html' => false,
+            'class_type' => null,
+            'req_params' => [],
+            'minimum_input_length' => 2,
+            'scroll' => false,
+            'allow_clear' => false,
+            'delay' => 300,
+            'language' => 'en',
+            'theme' => 'default',
+            'cache' => true,
+            'cache_timeout' => 5000,
+            'allow_add' => [
+                'enabled' => false,
+                'new_tag_text' => ' (NEW)',
+                'new_tag_prefix' => '__',
+                'tag_separators' => '[",", " "]',
+            ],
+        ];
+
+        $view->vars['full_name'] = 'user_select';
+
+        $this->type->finishView($view, $form, $options);
+
+        foreach (['table_name', 'text_property', 'primary_key', 'order_by'] as $leaked) {
+            $this->assertArrayNotHasKey($leaked, $view->vars, sprintf('"%s" must not reach the view.', $leaked));
+        }
+
+        // Presentation options are still published.
+        $this->assertSame(2, $view->vars['minimum_input_length']);
+        $this->assertSame(15, $view->vars['page_limit']);
     }
 }

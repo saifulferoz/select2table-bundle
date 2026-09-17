@@ -2,19 +2,30 @@
 
 declare(strict_types=1);
 
-namespace SaifulFeroz\Select2TableBundle\DependencyInjection;
+namespace SaifulFeroz\Select2TableBundle;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-class Configuration implements ConfigurationInterface
+/**
+ * Select2Table bundle.
+ *
+ * Extends AbstractBundle so the container extension alias is derived from the
+ * bundle name automatically ("select2_table"), keeping it permanently in sync
+ * with Symfony's naming convention.
+ */
+class Select2TableBundle extends AbstractBundle
 {
-    public function getConfigTreeBuilder(): TreeBuilder
+    public function getPath(): string
     {
-        $treeBuilder = new TreeBuilder('saifulferoz_select2_table');
-        $rootNode = $treeBuilder->getRootNode();
+        return \dirname(__DIR__);
+    }
 
-        $rootNode
+    public function configure(DefinitionConfigurator $definition): void
+    {
+        $definition->rootNode()
             ->children()
                 ->integerNode('minimum_input_length')->min(0)->defaultValue(1)->end()
                 ->booleanNode('scroll')->defaultFalse()->end()
@@ -38,8 +49,14 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('table_name')->defaultNull()->end()
                 ->scalarNode('text_property')->defaultNull()->end()
                 ->scalarNode('primary_key')->defaultValue('id')->end()
+                ->scalarNode('order_by')->defaultNull()->end()
             ->end();
+    }
 
-        return $treeBuilder;
+    public function loadExtension(array $config, ContainerConfigurator $configurator, ContainerBuilder $container): void
+    {
+        $container->setParameter('select2_table.config', $config);
+
+        $configurator->import(__DIR__ . '/../config/services.php');
     }
 }

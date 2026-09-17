@@ -92,12 +92,14 @@ class AutocompleteServiceTest extends TestCase
 
         $response = $service->getAutocompleteResults($request, $form);
 
+        // Results are ordered by the text column, so "United Kingdom" precedes
+        // "United States" regardless of insertion order.
         $this->assertFalse($response['more']);
         $this->assertCount(2, $response['results']);
-        $this->assertSame('1', (string) $response['results'][0]['id']);
-        $this->assertSame('United States', $response['results'][0]['text']);
-        $this->assertSame('2', (string) $response['results'][1]['id']);
-        $this->assertSame('United Kingdom', $response['results'][1]['text']);
+        $this->assertSame('2', (string) $response['results'][0]['id']);
+        $this->assertSame('United Kingdom', $response['results'][0]['text']);
+        $this->assertSame('1', (string) $response['results'][1]['id']);
+        $this->assertSame('United States', $response['results'][1]['text']);
     }
 
     public function testGetAutocompleteResultsWithMultipleProperties(): void
@@ -150,5 +152,156 @@ class AutocompleteServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid database identifier');
         $service->getAutocompleteResults($request, $form);
+    }
+
+    /**
+     * Regression: LIMIT/OFFSET without ORDER BY has no defined row order, so paged
+     * scrolling could repeat or skip rows. Pages must partition the result set.
+     */
+    public function testPaginationIsDeterministicAcrossPages(): void
+    {
+        for ($i = 4; $i <= 13; $i++) {
+            $this->connection->insert('tbl_countries', ['id' => $i, 'name' => 'Country ' . $i, 'code' => 'C' . $i]);
+        }
+
+        $form = $this->formFactory->createBuilder(FormType::class)
+            ->add('country', Select2TableType::class, [
+                'table_name' => 'tbl_countries',
+                'property' => 'name',
+                'primary_key' => 'id',
+                'text_property' => 'name',
+                'page_limit' => 5,
+            ])
+            ->getForm();
+
+        $service = new AutocompleteService($this->formFactory, $this->connection);
+
+        $collected = [];
+        foreach ([1, 2, 3] as $page) {
+            $response = $service->getAutocompleteResults(
+                new Request(['field_name' => 'country', 'q' => '', 'page' => $page]),
+                $form
+            );
+            $this->assertSame($page < 3, $response['more'], 'Page ' . $page . ' "more" flag');
+            foreach ($response['results'] as $row) {
+                $collected[] = (string) $row['id'];
+            }
+        }
+
+        $this->assertCount(13, $collected, 'Every row should be returned exactly once.');
+        $this->assertSame(\count($collected), \count(array_unique($collected)), 'No row may appear on two pages.');
+    }
+
+    public function testOrderByOptionOverridesDefaultOrdering(): void
+    {
+        $form = $this->formFactory->createBuilder(FormType::class)
+            ->add('country', Select2TableType::class, [
+                'table_name' => 'tbl_countries',
+                'property' => 'name',
+                'primary_key' => 'id',
+                'text_property' => 'name',
+                'order_by' => 'id',
+                'page_limit' => 10,
+            ])
+            ->getForm();
+
+        $service = new AutocompleteService($this->formFactory, $this->connection);
+        $response = $service->getAutocompleteResults(
+            new Request(['field_name' => 'country', 'q' => 'united', 'page' => 1]),
+            $form
+        );
+
+        $this->assertSame('1', (string) $response['results'][0]['id']);
+        $this->assertSame('2', (string) $response['results'][1]['id']);
+    }
+
+    /**
+     * Regression: the callback must be applied to the count and the data query
+     * alike, otherwise "more" can disagree with the rows actually returned.
+     */
+    public function testCallbackIsAppliedToBothCountAndDataQueries(): void
+    {
+        $form = $this->formFactory->createBuilder(FormType::class)
+            ->add('country', Select2TableType::class, [
+                'table_name' => 'tbl_countries',
+                'property' => 'name',
+                'primary_key' => 'id',
+                'text_property' => 'name',
+                'page_limit' => 10,
+                'callback' => static function ($qb): void {
+                    $qb->andWhere('code = :code')->setParameter('code', 'CA');
+                },
+            ])
+            ->getForm();
+
+        $service = new AutocompleteService($this->formFactory, $this->connection);
+        $response = $service->getAutocompleteResults(
+            new Request(['field_name' => 'country', 'q' => '', 'page' => 1]),
+            $form
+        );
+
+        $this->assertFalse($response['more']);
+        $this->assertCount(1, $response['results']);
+        $this->assertSame('Canada', $response['results'][0]['text']);
+    }
+
+    public function testInvalidOrderByIdentifierIsRejected(): void
+    {
+        $form = $this->formFactory->createBuilder(FormType::class)
+            ->add('country', Select2TableType::class, [
+                'table_name' => 'tbl_countries',
+                'property' => 'name',
+                'primary_key' => 'id',
+                'text_property' => 'name',
+                'order_by' => 'name; DROP TABLE tbl_countries',
+            ])
+            ->getForm();
+
+        $service = new AutocompleteService($this->formFactory, $this->connection);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->getAutocompleteResults(
+            new Request(['field_name' => 'country', 'q' => 'a', 'page' => 1]),
+            $form
+        );
+    }
+
+    /**
+     * The "html" column is injected into the page unescaped by the client, so it
+     * must only ever be sent for fields that explicitly opt in to HTML rendering.
+     */
+    public function testHtmlColumnIsWithheldUnlessRenderHtmlIsEnabled(): void
+    {
+        $this->connection->executeStatement('ALTER TABLE tbl_countries ADD COLUMN html VARCHAR(255) NULL');
+        $this->connection->executeStatement(
+            "UPDATE tbl_countries SET html = '<img src=x onerror=alert(1)>' WHERE id = 3"
+        );
+
+        $service = new AutocompleteService($this->formFactory, $this->connection);
+
+        $build = function (bool $renderHtml) {
+            return $this->formFactory->createBuilder(FormType::class)
+                ->add('country', Select2TableType::class, [
+                    'table_name' => 'tbl_countries',
+                    'property' => 'name',
+                    'primary_key' => 'id',
+                    'text_property' => 'name',
+                    'render_html' => $renderHtml,
+                ])
+                ->getForm();
+        };
+
+        $request = new Request(['field_name' => 'country', 'q' => 'canada', 'page' => 1]);
+
+        $withheld = $service->getAutocompleteResults($request, $build(false));
+        $this->assertCount(1, $withheld['results']);
+        $this->assertArrayNotHasKey(
+            'html',
+            $withheld['results'][0],
+            'The html column must not be exposed when render_html is disabled.'
+        );
+
+        $exposed = $service->getAutocompleteResults($request, $build(true));
+        $this->assertSame('<img src=x onerror=alert(1)>', $exposed['results'][0]['html']);
     }
 }
